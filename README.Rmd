@@ -1,6 +1,11 @@
-# RepData_PeerAssessment2
-Corrado Lanera  
-17 giugno 2015  
+---
+title: "RepData_PeerAssessment2"
+author: "Corrado Lanera"
+date: "17 giugno 2015"
+output: 
+  html_document: 
+    keep_md: yes
+---
 
 The basic goal of this assignment is to explore the NOAA Storm Database and answer some basic questions about severe weather events.
 
