@@ -69,36 +69,249 @@ img {
 
 <div id="synopsis" class="section level2">
 <h2>Synopsis</h2>
-<ul>
-<li><em>Most 10 complete sentences</em>.</li>
-</ul>
+<blockquote>
+<p>Most 10 complete sentences.</p>
+</blockquote>
 </div>
 <div id="data-processing" class="section level2">
 <h2>Data Processing</h2>
-<ul>
-<li><em>Describes (in words and code) how the data were loaded into R and processed for analysis. In particular, your analysis must start from the raw CSV file containing the data. You cannot do any preprocessing outside the document. If preprocessing is time-consuming you may consider using the cache = TRUE option for certain code chunks</em>.</li>
-</ul>
+<div id="preamble" class="section level3">
+<h3>Preamble</h3>
+<p>To perform the analysis we use <strong>R</strong> with the <code>package: dplyr</code>. Full code to provide the analysis are reported below whit its own explicit output. The code to produce the document can be found in mine Git repository [4].</p>
+<pre class="r"><code>library(dplyr)                      # efficient tool for working with data frame</code></pre>
+<pre><code>## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<p>Final confifuration of the system is:</p>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.2.0 (2015-04-16)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 8 x64 (build 9200)
+## 
+## locale:
+## [1] LC_COLLATE=Italian_Italy.1252  LC_CTYPE=Italian_Italy.1252   
+## [3] LC_MONETARY=Italian_Italy.1252 LC_NUMERIC=C                  
+## [5] LC_TIME=Italian_Italy.1252    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] dplyr_0.4.2
+## 
+## loaded via a namespace (and not attached):
+##  [1] R6_2.0.1        assertthat_0.1  magrittr_1.5    formatR_1.2    
+##  [5] parallel_3.2.0  DBI_0.3.1       tools_3.2.0     htmltools_0.2.6
+##  [9] yaml_2.1.13     Rcpp_0.11.6     stringi_0.4-1   rmarkdown_0.7  
+## [13] knitr_1.10.5    stringr_1.0.0   digest_0.6.8    evaluate_0.7</code></pre>
+</div>
+<div id="loading-processing-the-raw-data" class="section level3">
+<h3>Loading &amp; processing the Raw Data</h3>
+<blockquote>
+<p>Describes (in words and code) how the data were loaded into R and processed for analysis. In particular, your analysis must start from the raw CSV file containing the data. You cannot do any preprocessing outside the document. If preprocessing is time-consuming you may consider using the cache = TRUE option for certain code chunks.</p>
+</blockquote>
+<p>From <strong>NOAA Storm Database</strong> [1] we obtain data on storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage. We obtain file from 1950 up to November 2011. Some description of the data can be found in [2] and [3].</p>
+<p>Data are stored in standard <em>comma-separated-value</em> format, compress with <em>bzip2</em> algorithm.</p>
+<pre class="r"><code>download.file(&quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot;,
+              &quot;storm.data.bz2&quot;)                              # download raw data</code></pre>
+<pre class="r"><code>storm.data &lt;- read.csv(                                      # read csv from the
+                bzfile(&quot;storm.data.bz2&quot;, &quot;r&quot;))            # compressed .bz2 file</code></pre>
+</div>
+<div id="reading-selecting-data" class="section level3">
+<h3>Reading &amp; selecting data</h3>
+<p>After loading data we have created the table to visualize information in a useful way (thanks to <code>package: dplyr</code>). Next we convert names in compatibility names both for R and for applications which do not allow <em>underline</em> in names.</p>
+<pre class="r"><code>storm &lt;- tbl_df(storm.data)                       # create useful table for data
+
+names(storm) &lt;- make.names(names(storm), allow_ = FALSE)   # compatibility names
+
+storm                                                     # read the data tables</code></pre>
+<pre><code>## Source: local data frame [902,297 x 37]
+## 
+##    STATE..           BGN.DATE BGN.TIME TIME.ZONE COUNTY COUNTYNAME STATE
+## 1        1  4/18/1950 0:00:00     0130       CST     97     MOBILE    AL
+## 2        1  4/18/1950 0:00:00     0145       CST      3    BALDWIN    AL
+## 3        1  2/20/1951 0:00:00     1600       CST     57    FAYETTE    AL
+## 4        1   6/8/1951 0:00:00     0900       CST     89    MADISON    AL
+## 5        1 11/15/1951 0:00:00     1500       CST     43    CULLMAN    AL
+## 6        1 11/15/1951 0:00:00     2000       CST     77 LAUDERDALE    AL
+## 7        1 11/16/1951 0:00:00     0100       CST      9     BLOUNT    AL
+## 8        1  1/22/1952 0:00:00     0900       CST    123 TALLAPOOSA    AL
+## 9        1  2/13/1952 0:00:00     2000       CST    125 TUSCALOOSA    AL
+## 10       1  2/13/1952 0:00:00     2000       CST     57    FAYETTE    AL
+## ..     ...                ...      ...       ...    ...        ...   ...
+## Variables not shown: EVTYPE (fctr), BGN.RANGE (dbl), BGN.AZI (fctr),
+##   BGN.LOCATI (fctr), END.DATE (fctr), END.TIME (fctr), COUNTY.END (dbl),
+##   COUNTYENDN (lgl), END.RANGE (dbl), END.AZI (fctr), END.LOCATI (fctr),
+##   LENGTH (dbl), WIDTH (dbl), F (int), MAG (dbl), FATALITIES (dbl),
+##   INJURIES (dbl), PROPDMG (dbl), PROPDMGEXP (fctr), CROPDMG (dbl),
+##   CROPDMGEXP (fctr), WFO (fctr), STATEOFFIC (fctr), ZONENAMES (fctr),
+##   LATITUDE (dbl), LONGITUDE (dbl), LATITUDE.E (dbl), LONGITUDE. (dbl),
+##   REMARKS (fctr), REFNUM (dbl)</code></pre>
+<p>There were 902297 observations with 37 variables.</p>
+<p>The variables we are interested in are the <strong>type of event</strong> (<code>EVTYPE</code>), <strong>fatalities</strong> (<code>FATALITIES</code>) and <strong>injuries</strong> (<code>INJURIES</code>) and <strong>ammount of damage</strong> (all fields including <code>DMG</code>). Here we extract those variables and print a sample of ten cases.</p>
+<pre class="r"><code>use_storm &lt;- storm %&gt;%                                              # from strom
+        select(EVTYPE, FATALITIES, INJURIES,         # select explicit variables
+               contains(&quot;DMG&quot;))                  # and the ones containing &quot;DMG&quot;
+
+set.seed(1304)                  # set seed for reproducibility random selections
+sample_n(use_storm,10)</code></pre>
+<pre><code>## Source: local data frame [10 x 7]
+## 
+##               EVTYPE FATALITIES INJURIES PROPDMG PROPDMGEXP CROPDMG
+## 1            TORNADO          0        1   250.0          K       0
+## 2          TSTM WIND          0        0     2.0          K       0
+## 3        FLASH FLOOD          0        0     0.0                  0
+## 4  THUNDERSTORM WIND          0        0     8.0          K       0
+## 5               HAIL          0        0     0.0                  0
+## 6            TORNADO          0        0     2.5          M       0
+## 7          LIGHTNING          0        0    30.0          K       0
+## 8         WATERSPOUT          0        0     0.0          K       0
+## 9        FLASH FLOOD          0        0     0.0          K       0
+## 10         TSTM WIND          0        0     0.0                  0
+## Variables not shown: CROPDMGEXP (fctr)</code></pre>
+</div>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
-<ul>
-<li><p><em>At least one figure containing a plot</em>.</p></li>
-<li><p><em>Figures may have multiple plots in them (i.e. panel plots), but there cannot be more than three figures total</em>.</p></li>
-</ul>
+<blockquote>
+<p>At least one figure containing a plot.</p>
+</blockquote>
+<blockquote>
+<p>Figures may have multiple plots in them (i.e. panel plots), but there cannot be more than three figures total.</p>
+</blockquote>
 <div id="across-the-united-states-which-types-of-events-as-indicated-in-the-evtype-variable-are-most-harmful-with-respect-to-population-health" class="section level3">
 <h3>Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?</h3>
+<p>In order to find the most harmful event with respect to population healt we firstly select only those variable concerning the type of event, fatalities and injuries. Next we consider the total ammount of both wrt the type of event. Next we consider the sum of fatalities and injuries and rank each events according to the number of fatalities, injuries and the sum of them. Finally we show the first ten events wrt to rank of total injuries and fatalities.</p>
+<pre class="r"><code>health_storm &lt;- use_storm %&gt;%                                   # from use_storm
+                select(EVTYPE, FATALITIES, INJURIES) %&gt;%  # select explicit vars
+                group_by(EVTYPE) %&gt;%         # grouped them by the type of event
+                summarise_each(funs(sum)) %&gt;% # compute the sum wrt to the group
+                mutate(TOT.HARMFUL=FATALITIES + INJURIES, # create new variables
+                       RK.FAT=dense_rank(desc(FATALITIES)),
+                       RK.INJ=dense_rank(desc(INJURIES)),
+                       RK.TOT=dense_rank(desc(TOT.HARMFUL)) 
+                       ) %&gt;%
+                arrange(desc(TOT.HARMFUL),                 # arrange the dataset
+                        desc(FATALITIES),
+                        desc(INJURIES)
+                        )
+
+health_storm                                                         # show data</code></pre>
+<pre><code>## Source: local data frame [985 x 7]
+## 
+##               EVTYPE FATALITIES INJURIES TOT.HARMFUL RK.FAT RK.INJ RK.TOT
+## 1            TORNADO       5633    91346       96979      1      1      1
+## 2     EXCESSIVE HEAT       1903     6525        8428      2      4      2
+## 3          TSTM WIND        504     6957        7461      6      2      3
+## 4              FLOOD        470     6789        7259      7      3      4
+## 5          LIGHTNING        816     5230        6046      5      5      5
+## 6               HEAT        937     2100        3037      4      6      6
+## 7        FLASH FLOOD        978     1777        2755      3      8      7
+## 8          ICE STORM         89     1975        2064     23      7      8
+## 9  THUNDERSTORM WIND        133     1488        1621     15      9      9
+## 10      WINTER STORM        206     1321        1527     11     11     10
+## ..               ...        ...      ...         ...    ...    ...    ...</code></pre>
+<pre class="r"><code>barplot(t(as.matrix(health_storm[1:10,4:2])),          # plot the first 10 cases
+        main = &quot;First 10 most harmful events wrt polulation healt&quot;,      # title
+        names.arg = health_storm$EVTYPE[1:10],     # names of the groups of bars
+        las=3,                         # 90 degrees rotation only for bar lables
+        cex.names = 0.45,            # magnification of lables to fit the screen
+        ylab = &quot;People death/injuried&quot;,                               # y lables
+        beside = TRUE,       # grouped bars (not in a single cumulative columns)
+        col = terrain.colors(3))                                  # some colours
+legend(20,50000,c(&quot;Total&quot;, &quot;Injuried&quot;, &quot;Fatalities&quot;),                   # legend
+       fill = terrain.colors(3))           # colours of the legend: same as bars</code></pre>
+<p><img src="data:image/png;base64,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" /></p>
+<p>It is clear that the in all considered cases (only fatalities, only injuries or the total sum of them) <strong>tornado is the most harmful wrt population healt</strong>.</p>
 </div>
 <div id="across-the-united-states-which-types-of-events-have-the-greatest-economic-consequences" class="section level3">
 <h3>Across the United States, which types of events have the greatest economic consequences?</h3>
+<p>As above, in order to find the events with the greatest economic consequences we firstly select only those variable concerning the type of event, and the one which report the damages ammount.</p>
+<p>Next we consider the total ammount of both wrt the type of event. Next we consider the sum of fatalities and injuries and rank each events according to the number of fatalities, injuries and the sum of them. Finally we show the first ten events wrt to rank of total injuries and fatalities.</p>
+<pre class="r"><code>PROP_storm &lt;- use_storm %&gt;%                                     # from use_storm
+                select(EVTYPE, starts_with(&quot;PROP&quot;)) %&gt;%   # select explicit vars
+                group_by(EVTYPE, PROPDMGEXP) %&gt;%    # grop by type and magnitude
+                summarize(DAMAGE_SET=sum(PROPDMG)) %&gt;%# sum wrt to the magnitude
+                mutate(                     # compute explicit ammount of damage
+                        DAMAGE=ifelse(PROPDMGEXP==&quot;K&quot;,                  # K=10^3
+                                     DAMAGE_SET*(10^3),
+                                ifelse(PROPDMGEXP==&quot;M&quot;,                 # M=10^6
+                                       DAMAGE_SET*(10^6),
+                                ifelse(PROPDMGEXP==&quot;B&quot;,                 # B=10^9
+                                       DAMAGE_SET*(10^9),
+                                DAMAGE_SET))              # no changes otherwise
+                                )
+                       ) %&gt;%
+                summarise(TOTPROPDMG=sum(DAMAGE))     # comput the total ammount
+
+CROP_storm &lt;- use_storm %&gt;%                                   # similar as above
+                select(EVTYPE, starts_with(&quot;CROP&quot;)) %&gt;%
+                group_by(EVTYPE, CROPDMGEXP) %&gt;% 
+                summarize(DAMAGE_SET=sum(CROPDMG)) %&gt;% 
+                mutate(DAMAGE=ifelse(CROPDMGEXP==&quot;K&quot;,
+                                     DAMAGE_SET*(10^3),
+                                ifelse(CROPDMGEXP==&quot;M&quot;,
+                                       DAMAGE_SET*(10^6),
+                                ifelse(CROPDMGEXP==&quot;B&quot;,
+                                       DAMAGE_SET*(10^9),
+                                DAMAGE_SET))
+                                )
+                       ) %&gt;%
+                summarise(TOTCROPDMG=sum(DAMAGE))
+
+DMG_storm &lt;- full_join(PROP_storm,CROP_storm) %&gt;%                # join datasets
+                mutate(TOTDMG=TOTPROPDMG + TOTCROPDMG,     # comput total damage
+                       RK.PROP=dense_rank(desc(TOTPROPDMG)),         # and ranks
+                       RK.CROP=dense_rank(desc(TOTCROPDMG)),
+                       RK.DMG=dense_rank(desc(TOTDMG))) %&gt;%
+                arrange(desc(TOTDMG))            # arrange wrt the global damage</code></pre>
+<pre><code>## Joining by: &quot;EVTYPE&quot;</code></pre>
+<pre class="r"><code>DMG_storm                                                            # show data</code></pre>
+<pre><code>## Source: local data frame [985 x 7]
+## 
+##               EVTYPE   TOTPROPDMG  TOTCROPDMG       TOTDMG RK.PROP RK.CROP
+## 1              FLOOD 144657709807  5661968450 150319678257       1       2
+## 2  HURRICANE/TYPHOON  69305840000  2607872800  71913712800       2       7
+## 3            TORNADO  56925660790   414953270  57340614060       3      17
+## 4        STORM SURGE  43323536000        5000  43323541000       4      92
+## 5               HAIL  15727367053  3025537890  18752904943       6       5
+## 6        FLASH FLOOD  16140812067  1421317100  17562129167       5       8
+## 7            DROUGHT   1046106000 13972566000  15018672000      23       1
+## 8          HURRICANE  11868319010  2741910000  14610229010       7       6
+## 9        RIVER FLOOD   5118945500  5029459000  10148404500      11       3
+## 10         ICE STORM   3944927860  5022113500   8967041360      15       4
+## ..               ...          ...         ...          ...     ...     ...
+## Variables not shown: RK.DMG (int)</code></pre>
+<pre class="r"><code>barplot(t(as.matrix(DMG_storm[1:10,c(4,2,3)])),          # as the previusly plot
+        main = &quot;First 10 events with greatest economic consequences&quot;,
+        names.arg = DMG_storm$EVTYPE[1:10],
+        las=3,
+        cex.names = 0.45,
+        ylab = &quot;Damage in US $&quot;,
+        beside = TRUE,
+        col = terrain.colors(3))
+legend(20,80000000000,c(&quot;Total&quot;, &quot;Property&quot;, &quot;Crop&quot;),
+       fill = terrain.colors(3))</code></pre>
+<p><img src="data:image/png;base64,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" /></p>
+<p>As in the case of population healt it is one events that clearly is the worst one. In this case it is not the tornado (which reach the 3<sup>rd</sup> position) but the <em>Flood is the events with the greatest economic consequences</em>.</p>
 </div>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
-<p>[1] National Weather Service Storm Data Documentation.</p>
+<p>[1] Storm Data [47Mb]</p>
+<p><a href="https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2">https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2</a></p>
+<p>[2] National Weather Service Storm Data Documentation.</p>
 <p><a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf</a></p>
-<p>[2] National Climatic Data Center Storm Events FAQ.</p>
+<p>[3] National Climatic Data Center Storm Events FAQ.</p>
 <p><a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf">https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf</a></p>
-<p>[3] This assessment Git repo.</p>
+<p>[4] This assessment Git repo.</p>
 <p><a href="https://github.com/CorradoL/RepData_PeerAssessment2" class="uri">https://github.com/CorradoL/RepData_PeerAssessment2</a></p>
 </div>
 
