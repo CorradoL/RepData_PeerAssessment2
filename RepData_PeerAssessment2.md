@@ -1,4 +1,4 @@
-# NOAA Storm Database exploring for US healt and economic consequences due to severe weather events
+# NOAA Storm Database analysis for U.S. healt and economic consequences due to severe weather events
 Corrado Lanera  
 17 giugno 2015  
 
@@ -6,7 +6,7 @@ Corrado Lanera
 
 > Most 10 complete sentences.
 
-In this report we aim to find the sever weather events that had the worst consequences on population healt and economic in the United State from 1950 to 2011. We based our analysis on the National Oceanic and Atmospheric Administration (NOAA) Storm Database [1]. The results of the analysis clearly identify the tornado as the most harmful event wrt population healt and the flood as the one with the greatest economic consequences. To perform the research we used the statistical program language R.
+In this report we aim to find the sever weather events that had the worst consequences on population healt and economic in the United State from 1950 to 2011. We based our analysis on the National Oceanic and Atmospheric Administration (NOAA) Storm Database. The results of the analysis clearly identify the tornado as the most harmful event wrt population healt and the flood as the one with the greatest economic consequences. To perform the research we used the statistical program language R.
 
 ## Data Processing
 
