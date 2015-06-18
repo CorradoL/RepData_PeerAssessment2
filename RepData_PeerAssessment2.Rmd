@@ -12,21 +12,22 @@ output:
 
 > Most 10 complete sentences.
 
+In this report we aim to find the sever weather events that had the worst consequences on population healt and economic in the United State from 1950 to 2011. We based our analysis on the National Oceanic and Atmospheric Administration (NOAA) Storm Database [1]. The results of the analysis clearly identify the tornado as the most harmful event wrt population healt and the flood as the one with the greatest economic consequences. To perform the research we used the statistical program language R.
 
 ## Data Processing
 
 ### Preamble
 
-To perform the analysis we use __R__ with the `package: dplyr`. Full code to provide the analysis are reported below whit its own explicit output. The code to produce the document can be found in mine Git repository [4].
+To perform the analysis we use __R__ with the `package: dplyr`. Full code are reported below whit each explicit output. Morover the code to produce the present document is written in __R Markdown__ and can be found inside mine __GitHub__ repository [4].
 
 ```{r}
 library(dplyr)                      # efficient tool for working with data frame
 ```
 
-Final confifuration of the system is:
+Final configuration of the system is:
 
 ```{r}
-sessionInfo()
+sessionInfo()         # provide principal info about configuration of the system
 ```
 
 
@@ -37,13 +38,12 @@ sessionInfo()
 
 From __NOAA Storm Database__ [1] we obtain data on storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage. We obtain file from 1950 up to November 2011. Some description of the data can be found in [2] and [3].
 
-Data are stored in standard *comma-separated-value* format, compress with *bzip2* algorithm.
+Data are stored in the standard *comma-separated-value* format, compress with *bzip2* algorithm.
 
-```{r eval=FALSE}
-download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2",
-              "storm.data.bz2")                              # download raw data
-```
 ```{r cache=TRUE}
+download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2",
+              "storm.data.bz2")                              # download raw data
+
 storm.data <- read.csv(                                      # read csv from the
                 bzfile("storm.data.bz2", "r"))            # compressed .bz2 file
 ```
@@ -51,7 +51,7 @@ storm.data <- read.csv(                                      # read csv from the
 ### Reading \& selecting data
 
 After loading data we have created the table to visualize information in a useful way (thanks to `package: dplyr`). 
-Next we convert names in compatibility names both for R and for applications which do not allow *underline* in names.
+Next we convert names in *compatibility names* both for R and for applications which do not allow *underline* in names.
 
 ```{r cache=TRUE}
 storm <- tbl_df(storm.data)                       # create useful table for data
@@ -61,17 +61,17 @@ names(storm) <- make.names(names(storm), allow_ = FALSE)   # compatibility names
 storm                                                     # read the data tables
 ```
 
-There were `r dim(storm)[1]` observations with `r dim(storm)[2]` variables.
+There were `r dim(storm)[1]` total observations with `r dim(storm)[2]` variables.
 
-The variables we are interested in are the __type of event__ (`EVTYPE`), __fatalities__ (`FATALITIES`) and __injuries__ (`INJURIES`) and __ammount of damage__ (all fields including `DMG`). Here we extract those variables and print a sample of ten cases.
+The variables we are interested in are the __type of event__ (`EVTYPE`), __fatalities__ (`FATALITIES`) and __injuries__ (`INJURIES`) and those describing the __ammount of damage__ (all fields including `DMG`). Here we extract those variables and print a sample of ten cases to watch them togheter.
 
 ```{r}
-use_storm <- storm %>%                                              # from strom
+use.storm <- storm %>%                                              # from strom
         select(EVTYPE, FATALITIES, INJURIES,         # select explicit variables
                contains("DMG"))                  # and the ones containing "DMG"
 
 set.seed(1304)                  # set seed for reproducibility random selections
-sample_n(use_storm,10)
+sample_n(use.storm,10)                        # print a random sample of 10 rows
 ```
 
 
@@ -88,25 +88,23 @@ sample_n(use_storm,10)
 In order to find the most harmful event with respect to population healt we firstly select only those variable concerning the type of event, fatalities and injuries. Next we consider the total ammount of both wrt the type of event. Next we consider the sum of fatalities and injuries and rank each events according to the number of fatalities, injuries and the sum of them. Finally we show the first ten events wrt to rank of total injuries and fatalities.
 
 ```{r cache=TRUE}
-health_storm <- use_storm %>%                                   # from use_storm
+health.storm <- use.storm %>%                                   # from use_storm
                 select(EVTYPE, FATALITIES, INJURIES) %>%  # select explicit vars
                 group_by(EVTYPE) %>%         # grouped them by the type of event
                 summarise_each(funs(sum)) %>% # compute the sum wrt to the group
                 mutate(TOT.HARMFUL=FATALITIES + INJURIES, # create new variables
                        RK.FAT=dense_rank(desc(FATALITIES)),
                        RK.INJ=dense_rank(desc(INJURIES)),
-                       RK.TOT=dense_rank(desc(TOT.HARMFUL)) 
-                       ) %>%
+                       RK.TOT=dense_rank(desc(TOT.HARMFUL))) %>%
                 arrange(desc(TOT.HARMFUL),                 # arrange the dataset
                         desc(FATALITIES),
-                        desc(INJURIES)
-                        )
+                        desc(INJURIES))
 
-health_storm                                                         # show data
+health.storm                                                         # show data
 
-barplot(t(as.matrix(health_storm[1:10,4:2])),          # plot the first 10 cases
+barplot(t(as.matrix(health.storm[1:10,4:2])),# 4 interest vars of first 10 cases
         main = "First 10 most harmful events wrt polulation healt",      # title
-        names.arg = health_storm$EVTYPE[1:10],     # names of the groups of bars
+        names.arg = health.storm$EVTYPE[1:10],     # names of the groups of bars
         las=3,                         # 90 degrees rotation only for bar lables
         cex.names = 0.45,            # magnification of lables to fit the screen
         ylab = "People death/injuried",                               # y lables
@@ -116,59 +114,52 @@ legend(20,50000,c("Total", "Injuried", "Fatalities"),                   # legend
        fill = terrain.colors(3))           # colours of the legend: same as bars
 ```
 
-It is clear that the in all considered cases (only fatalities, only injuries or the total sum of them) __tornado is the most harmful wrt population healt__.
+It is clear that in all considered cases (only fatalities, only injuries or the sum of both) __tornado is the most harmful event wrt population healt__.
 
 ### Across the United States, which types of events have the greatest economic consequences?
 
-As above, in order to find the events with the greatest economic consequences we firstly select only those variable concerning the type of event, and the one which report the damages ammount.
-
-
-Next we consider the total ammount of both wrt the type of event. Next we consider the sum of fatalities and injuries and rank each events according to the number of fatalities, injuries and the sum of them. Finally we show the first ten events wrt to rank of total injuries and fatalities. 
+As above, in order to find the event with the greatest economic consequences we firstly select only the variable of the dataset concerning the type of event, and the ones which report the damages ammount. More in detail we compute separately the property damage and the crop damage computing the explicit ammount of damage wrt the events. Next we rank the events wrt each of type of damage and for the total ammount of them. Finally we show the first ten events wrt to rank of total economic consequences.
 
 ```{r cache=TRUE}
-PROP_storm <- use_storm %>%                                     # from use_storm
+PROP.storm <- use.storm %>%                                     # from use_storm
                 select(EVTYPE, starts_with("PROP")) %>%   # select explicit vars
                 group_by(EVTYPE, PROPDMGEXP) %>%    # grop by type and magnitude
-                summarize(DAMAGE_SET=sum(PROPDMG)) %>%# sum wrt to the magnitude
+                summarize(DAMAGE.SET=sum(PROPDMG)) %>%# sum wrt to the magnitude
                 mutate(                     # compute explicit ammount of damage
-                        DAMAGE=ifelse(PROPDMGEXP=="K",                  # K=10^3
-                                     DAMAGE_SET*(10^3),
+                        PROPDAMAGE=ifelse(PROPDMGEXP=="K",              # K=10^3
+                                     DAMAGE.SET*(10^3),
                                 ifelse(PROPDMGEXP=="M",                 # M=10^6
-                                       DAMAGE_SET*(10^6),
+                                       DAMAGE.SET*(10^6),
                                 ifelse(PROPDMGEXP=="B",                 # B=10^9
-                                       DAMAGE_SET*(10^9),
-                                DAMAGE_SET))              # no changes otherwise
-                                )
-                       ) %>%
-                summarise(TOTPROPDMG=sum(DAMAGE))     # comput the total ammount
+                                       DAMAGE.SET*(10^9),
+                                DAMAGE.SET)))) %>%        # no changes otherwise
+                summarise(TOTPROPDMG=sum(PROPDAMAGE)) # comput the total ammount
 
-CROP_storm <- use_storm %>%                                   # similar as above
+CROP.storm <- use.storm %>%                                   # similar as above
                 select(EVTYPE, starts_with("CROP")) %>%
                 group_by(EVTYPE, CROPDMGEXP) %>% 
-                summarize(DAMAGE_SET=sum(CROPDMG)) %>% 
-                mutate(DAMAGE=ifelse(CROPDMGEXP=="K",
-                                     DAMAGE_SET*(10^3),
+                summarize(DAMAGE.SET=sum(CROPDMG)) %>% 
+                mutate(CROPDAMAGE=ifelse(CROPDMGEXP=="K",
+                                     DAMAGE.SET*(10^3),
                                 ifelse(CROPDMGEXP=="M",
-                                       DAMAGE_SET*(10^6),
+                                       DAMAGE.SET*(10^6),
                                 ifelse(CROPDMGEXP=="B",
-                                       DAMAGE_SET*(10^9),
-                                DAMAGE_SET))
-                                )
-                       ) %>%
-                summarise(TOTCROPDMG=sum(DAMAGE))
+                                       DAMAGE.SET*(10^9),
+                                DAMAGE.SET)))) %>%
+                summarise(TOTCROPDMG=sum(CROPDAMAGE))
 
-DMG_storm <- full_join(PROP_storm,CROP_storm) %>%                # join datasets
+DMG.storm <- full_join(PROP.storm,CROP.storm) %>%                # join datasets
                 mutate(TOTDMG=TOTPROPDMG + TOTCROPDMG,     # comput total damage
                        RK.PROP=dense_rank(desc(TOTPROPDMG)),         # and ranks
                        RK.CROP=dense_rank(desc(TOTCROPDMG)),
                        RK.DMG=dense_rank(desc(TOTDMG))) %>%
                 arrange(desc(TOTDMG))            # arrange wrt the global damage
 
-DMG_storm                                                            # show data
+DMG.storm %>% print(width = Inf)                       # show data with all vars
 
-barplot(t(as.matrix(DMG_storm[1:10,c(4,2,3)])),          # as the previusly plot
+barplot(t(as.matrix(DMG.storm[1:10,c(4,2,3)])),          # as the previusly plot
         main = "First 10 events with greatest economic consequences",
-        names.arg = DMG_storm$EVTYPE[1:10],
+        names.arg = DMG.storm$EVTYPE[1:10],
         las=3,
         cex.names = 0.45,
         ylab = "Damage in US $",
