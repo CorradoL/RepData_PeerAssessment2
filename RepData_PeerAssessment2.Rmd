@@ -4,9 +4,10 @@ title: NOAA Storm Database analysis for U.S. healt and economic consequences due
 author: "Corrado Lanera"
 date: "17 giugno 2015"
 output:
-  pdf_document: default
   html_document:
     keep_md: yes
+  pdf_document: default
+  word_document: default
 ---
 
 ## Synopsis
